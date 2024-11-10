@@ -37,11 +37,11 @@ func FetchServerData(country int) (string, string) {
 	return ips[0].String(), publicKey
 }
 
-func fetchOwnPrivateKey(pin string) string {
+func fetchOwnPrivateKey(token string) string {
 	url := "https://api.nordvpn.com/v1/users/services/credentials"
 	req, err := http.NewRequest("GET", url, nil)
 	panicer(err)
-	req.SetBasicAuth("token", getToken(pin))
+	req.SetBasicAuth("token", token)
 	resp, err := http.DefaultClient.Do(req)
 	panicer(err)
 	data, err := io.ReadAll(resp.Body)

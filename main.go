@@ -25,23 +25,15 @@ func main() {
 		} else {
 			host, key = FetchServerData(-1)
 		}
-		pin1 := readSecretInput("Enter PIN")
-		privateKey := fetchOwnPrivateKey(pin1)
+		privateKey := fetchOwnPrivateKey(getToken())
 		execWGup(interfaceName, privateKey, key, host, defaultNordvpnAddress)
 	case "down":
 		execWGdown(interfaceName, defaultNordvpnAddress)
 	case "init":
-		pin1 := readSecretInput("Enter PIN")
-		pin2 := readSecretInput("Enter PIN again")
-		if pin1 != pin2 {
-			panicer(fmt.Errorf("pins not match"))
-		}
 		token := readSecretInput("Enter TOKEN")
-		setToken(pin1, token)
+		setToken(token)
 	case "showToken":
-		pin1 := readSecretInput("Enter PIN")
-		privateKey := getToken(pin1)
-		fmt.Println(privateKey)
+		fmt.Println(getToken())
 	case "listCountries":
 		table := tablewriter.NewWriter(os.Stdout)
 		for _, country := range getCountryList() {
