@@ -6,7 +6,6 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"strings"
 )
 
 func FetchServerData(countryID int, cityID int) (string, string, Server) {
@@ -15,7 +14,6 @@ func FetchServerData(countryID int, cityID int) (string, string, Server) {
 		url += fmt.Sprintf("&filters[country_id]=%d", countryID)
 	}
 
-	// If cityID is specified, we'll fetch all servers and filter for the city
 	if cityID <= 0 {
 		url += "&limit=1"
 	} else {
@@ -36,7 +34,6 @@ func FetchServerData(countryID int, cityID int) (string, string, Server) {
 
 	var selectedServer Server
 	if cityID > 0 {
-		// Find server in the requested city
 		found := false
 		for _, server := range servers {
 			for _, location := range server.Locations {
@@ -69,19 +66,6 @@ func FetchServerData(countryID int, cityID int) (string, string, Server) {
 	ips, err := net.LookupIP(hostname)
 	panicer(err)
 	return ips[0].String(), publicKey, selectedServer
-}
-
-func getCityID(countryID int, cityName string) int {
-	for _, country := range getCountryList() {
-		if country.ID == countryID {
-			for _, city := range country.Cities {
-				if strings.EqualFold(city.Name, cityName) {
-					return city.ID
-				}
-			}
-		}
-	}
-	return -1
 }
 
 func fetchOwnPrivateKey(token string) string {

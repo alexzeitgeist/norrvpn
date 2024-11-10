@@ -85,10 +85,8 @@ func main() {
 		var server Server
 
 		if flag.NArg() == 1 {
-			// No country specified, connect to recommended server
 			host, key, server = FetchServerData(-1, -1)
 		} else if flag.NArg() == 2 {
-			// Country code specified
 			countryID := getCountryCode(flag.Arg(1))
 			if countryID == -1 {
 				fmt.Printf("Error: Invalid country code '%s'\n", flag.Arg(1))
@@ -96,13 +94,12 @@ func main() {
 			}
 			host, key, server = FetchServerData(countryID, -1)
 		} else if flag.NArg() == 3 {
-			// Country code and city specified
 			countryID := getCountryCode(flag.Arg(1))
 			if countryID == -1 {
 				fmt.Printf("Error: Invalid country code '%s'\n", flag.Arg(1))
 				os.Exit(1)
 			}
-			cityID := getCityID(countryID, flag.Arg(2))
+			cityID := getCityCode(countryID, flag.Arg(2))
 			if cityID == -1 {
 				fmt.Printf("Error: Invalid city name '%s' for country '%s'\n", flag.Arg(2), flag.Arg(1))
 				os.Exit(1)
