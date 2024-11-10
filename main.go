@@ -136,11 +136,10 @@ func main() {
 					fmt.Sprintf("%d", country.ID),
 					city.Name,
 					fmt.Sprintf("%d", city.ID),
-					fmt.Sprintf("%d", city.ServerCount),
 				})
 			}
 		}
-		headers := []string{"Country", "Code", "Country ID", "City", "City ID", "Servers"}
+		headers := []string{"Country", "Code", "Country ID", "City", "City ID"}
 		table.SetHeader(headers)
 		table.Render()
 	case "export":
