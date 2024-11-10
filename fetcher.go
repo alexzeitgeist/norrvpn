@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func FetchServerData(country int) (string, string) {
+func FetchServerData(country int) (string, string, Server) {
 	url := "https://api.nordvpn.com/v1/servers/recommendations?filters[servers_technologies][identifier]=wireguard_udp&limit=1"
 	if country > 0 {
 		url += fmt.Sprintf("&filters[country_id]=%d", country)
@@ -25,16 +25,14 @@ func FetchServerData(country int) (string, string) {
 	var publicKey string
 
 	for _, technology := range servers[0].Technologies {
-
 		if technology.Identifier != "wireguard_udp" {
 			continue
 		}
 		publicKey = technology.Metadata[0].Value
-
 	}
 	ips, err := net.LookupIP(hostname)
 	panicer(err)
-	return ips[0].String(), publicKey
+	return ips[0].String(), publicKey, servers[0]
 }
 
 func fetchOwnPrivateKey(token string) string {
