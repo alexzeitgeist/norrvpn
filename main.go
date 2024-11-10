@@ -21,6 +21,7 @@ const helpText = `Usage: norrvpn [flags] <command> [args]
 Commands:
   up [cc]        Connect to VPN (optionally specify country code)
   down           Disconnect from VPN
+  export         Export current connection as WireGuard config
   init           Initialize with NordVPN token
   showToken      Display stored token
   listCountries  Show available country codes
@@ -133,5 +134,35 @@ func main() {
 		headers := []string{"Country", "Code"}
 		table.SetHeader(headers)
 		table.Render()
+	case "export":
+		if !isWGInterfaceExists(interfaceName) {
+			fmt.Println("Error: Not connected to VPN")
+			os.Exit(1)
+		}
+
+		server, err := loadServerInfo()
+		if err != nil {
+			fmt.Printf("Error loading server info: %v\n", err)
+			os.Exit(1)
+		}
+
+		var publicKey string
+		for _, tech := range server.Technologies {
+			if tech.Identifier == "wireguard_udp" {
+				publicKey = tech.Metadata[0].Value
+				break
+			}
+		}
+
+		privateKey := fetchOwnPrivateKey(getToken())
+
+		fmt.Printf("# wg config for %s (%s)\n", server.Name, server.Locations[0].Country.Code)
+		fmt.Printf("[Interface]\n")
+		fmt.Printf("Address = %s\n", defaultNordvpnAddress)
+		fmt.Printf("PrivateKey = %s\n\n", privateKey)
+		fmt.Printf("[Peer]\n")
+		fmt.Printf("PublicKey = %s\n", publicKey)
+		fmt.Printf("AllowedIPs = 0.0.0.0/0\n")
+		fmt.Printf("Endpoint = %s:%s\n", server.Hostname, defaultWGPort)
 	}
 }
