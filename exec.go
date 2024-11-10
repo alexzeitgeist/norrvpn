@@ -29,7 +29,13 @@ func run(command ...string) (string, error, int) {
 	return string(output), err, cmd.ProcessState.ExitCode()
 }
 
-func execWGdown(interfaceName, interfaceIP string) {
+func isWGInterfaceExists(interfaceName string) bool {
+	cmd := exec.Command("ip", "link", "show", interfaceName)
+	err := cmd.Run()
+	return err == nil
+}
+
+func execWGdown(interfaceName, interfaceIP string) error {
 	run("ip", "route", "delete", "default", "dev", interfaceName, "table", "212450")
 	out, _, _ := run("ip", "rule", "show")
 	run("ip", "rule", "delete", "to", getEndpointIP(strings.Split(out, "\n")), "table", "main", "priority", "219")
@@ -37,9 +43,10 @@ func execWGdown(interfaceName, interfaceIP string) {
 	run("ip", "link", "set", "down", "dev", interfaceName)
 	run("ip", "address", "del", interfaceIP, "dev", interfaceName)
 	run("ip", "link", "delete", "dev", interfaceName)
+	return nil
 }
 
-func execWGup(interfaceName, privateKey, publicKey, endpointIP, interfaceIP string) {
+func execWGup(interfaceName, privateKey, publicKey, endpointIP, interfaceIP string) error {
 	var cmd *exec.Cmd
 	cmd = exec.Command("ip", "link", "show", interfaceName)
 	cmd.Run()
@@ -60,4 +67,5 @@ func execWGup(interfaceName, privateKey, publicKey, endpointIP, interfaceIP stri
 	run("ip", "route", "add", "default", "dev", interfaceName, "table", "212450")
 	run("ip", "rule", "add", "to", endpointIP, "table", "main", "priority", "219")
 	run("ip", "rule", "add", "lookup", "212450", "priority", "220")
+	return nil
 }
