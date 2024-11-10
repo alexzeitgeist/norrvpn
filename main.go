@@ -35,13 +35,8 @@ Examples:
   norrvpn down           Disconnect current session`
 
 func main() {
-	if os.Geteuid() != 0 {
-		fmt.Println("This program must be run as root (sudo)")
-		os.Exit(1)
-	}
-
 	flag.Parse()
-	
+
 	if *helpFlag {
 		fmt.Println(helpText)
 		os.Exit(0)
@@ -88,7 +83,7 @@ func main() {
 
 		var host, key string
 		var server Server
-		
+
 		if flag.NArg() == 1 {
 			// No country specified, connect to recommended server
 			host, key, server = FetchServerData(-1, -1)
@@ -133,7 +128,7 @@ func main() {
 		}
 
 		if server, err := loadServerInfo(); err == nil {
-			fmt.Printf("Disconnecting from %s (%s)...\n", 
+			fmt.Printf("Disconnecting from %s (%s)...\n",
 				server.Locations[0].Country.Name,
 				server.Locations[0].Country.Code)
 		}

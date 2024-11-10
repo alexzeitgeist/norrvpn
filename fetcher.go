@@ -14,12 +14,14 @@ func FetchServerData(countryID int, cityID int) (string, string, Server) {
 	if countryID > 0 {
 		url += fmt.Sprintf("&filters[country_id]=%d", countryID)
 	}
-	
+
 	// If cityID is specified, we'll fetch all servers and filter for the city
 	if cityID <= 0 {
 		url += "&limit=1"
+	} else {
+		url += "&limit=16384"
 	}
-	
+
 	resp, err := http.Get(url)
 	panicer(err)
 	data, err := io.ReadAll(resp.Body)
