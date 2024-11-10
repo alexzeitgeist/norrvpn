@@ -49,6 +49,11 @@ func main() {
 
 		saveServerInfo(server)
 	case "down":
+		if !isWGInterfaceExists(interfaceName) {
+			fmt.Printf("Error: interface %s does not exist\n", interfaceName)
+			os.Exit(1)
+		}
+
 		if server, err := loadServerInfo(); err == nil {
 			fmt.Printf("Disconnecting from %s (%s)\n", 
 				server.Locations[0].Country.Name,

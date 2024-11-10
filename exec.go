@@ -37,9 +37,6 @@ func isWGInterfaceExists(interfaceName string) bool {
 }
 
 func execWGdown(interfaceName, interfaceIP string) error {
-	if !isWGInterfaceExists(interfaceName) {
-		return fmt.Errorf("interface %s does not exist", interfaceName)
-	}
 	run("ip", "route", "delete", "default", "dev", interfaceName, "table", "212450")
 	out, _, _ := run("ip", "rule", "show")
 	run("ip", "rule", "delete", "to", getEndpointIP(strings.Split(out, "\n")), "table", "main", "priority", "219")
