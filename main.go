@@ -14,6 +14,25 @@ const defaultNordvpnAddress = "10.5.0.2/32"
 
 const interfaceName = "norrvpn01"
 
+var helpFlag = flag.Bool("help", false, "Show help information")
+
+const helpText = `Usage: norrvpn [flags] <command> [args]
+
+Commands:
+  up [cc]        Connect to VPN (optionally specify country code)
+  down           Disconnect from VPN
+  init           Initialize with NordVPN token
+  showToken      Display stored token
+  listCountries  Show available country codes
+
+Flags:
+  --help         Show this help message
+
+Examples:
+  norrvpn up gb          Connect to server in Great Britain
+  norrvpn listCountries  Show all available country codes
+  norrvpn down           Disconnect current session`
+
 func main() {
 	if os.Geteuid() != 0 {
 		fmt.Println("This program must be run as root (sudo)")
@@ -21,26 +40,36 @@ func main() {
 	}
 
 	flag.Parse()
+	
+	if *helpFlag {
+		fmt.Println(helpText)
+		os.Exit(0)
+	}
 	function := flag.Arg(0)
 
+	displayServerInfo := func(server Server) {
+		fmt.Printf("Server name: %s\n", server.Name)
+		fmt.Printf("Country: %s (%s)\n", server.Locations[0].Country.Name, server.Locations[0].Country.Code)
+		fmt.Printf("City: %s\n", server.Locations[0].Country.City.Name)
+		fmt.Printf("Load: %d%%\n", server.Load)
+		fmt.Printf("Status: %s\n", server.Status)
+		fmt.Printf("Hostname: %s\n", server.Hostname)
+	}
+
 	if function == "" {
-		if isWGInterfaceExists(interfaceName) {
-			if server, err := loadServerInfo(); err == nil {
-				fmt.Printf("Currently connected to:\n")
-				fmt.Printf("Server name: %s\n", server.Name)
-				fmt.Printf("Country: %s (%s)\n", server.Locations[0].Country.Name, server.Locations[0].Country.Code)
-				fmt.Printf("City: %s\n", server.Locations[0].Country.City.Name)
-				fmt.Printf("Load: %d%%\n", server.Load)
-				fmt.Printf("Status: %s\n", server.Status)
-				fmt.Printf("Hostname: %s\n", server.Hostname)
-			} else {
-				fmt.Printf("Connected but server details not available\n")
-			}
-		} else {
+		if !isWGInterfaceExists(interfaceName) {
 			if _, err := os.Stat(serverInfoPath); err == nil {
 				os.Remove(serverInfoPath)
 			}
 			fmt.Printf("Not connected\n")
+			return
+		}
+
+		if server, err := loadServerInfo(); err == nil {
+			fmt.Printf("Currently connected to:\n")
+			displayServerInfo(server)
+		} else {
+			fmt.Printf("Connected but server details not available\n")
 		}
 		return
 	}
@@ -51,12 +80,7 @@ func main() {
 			fmt.Printf("Error: interface %s already exists. Please disconnect first.\n", interfaceName)
 			if server, err := loadServerInfo(); err == nil {
 				fmt.Printf("\nCurrently connected to:\n")
-				fmt.Printf("Server name: %s\n", server.Name)
-				fmt.Printf("Country: %s (%s)\n", server.Locations[0].Country.Name, server.Locations[0].Country.Code)
-				fmt.Printf("City: %s\n", server.Locations[0].Country.City.Name)
-				fmt.Printf("Load: %d%%\n", server.Load)
-				fmt.Printf("Status: %s\n", server.Status)
-				fmt.Printf("Hostname: %s\n", server.Hostname)
+				displayServerInfo(server)
 			}
 			os.Exit(1)
 		}
@@ -70,12 +94,8 @@ func main() {
 		}
 		privateKey := fetchOwnPrivateKey(getToken())
 
-		fmt.Printf("Server name: %s\n", server.Name)
-		fmt.Printf("Country: %s (%s)\n", server.Locations[0].Country.Name, server.Locations[0].Country.Code)
-		fmt.Printf("City: %s\n", server.Locations[0].Country.City.Name)
-		fmt.Printf("Load: %d%%\n", server.Load)
-		fmt.Printf("Status: %s\n", server.Status)
-		fmt.Printf("Hostname: %s\n", server.Hostname)
+		fmt.Printf("Connecting to:\n")
+		displayServerInfo(server)
 		fmt.Printf("WG public key: %s\n", key)
 		fmt.Printf("WG private key: %s\n", privateKey)
 		if err := execWGup(interfaceName, privateKey, key, host, defaultNordvpnAddress); err != nil {
@@ -91,7 +111,7 @@ func main() {
 		}
 
 		if server, err := loadServerInfo(); err == nil {
-			fmt.Printf("Disconnecting from %s (%s)\n", 
+			fmt.Printf("Disconnecting from %s (%s)...\n", 
 				server.Locations[0].Country.Name,
 				server.Locations[0].Country.Code)
 		}
