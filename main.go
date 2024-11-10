@@ -22,6 +22,15 @@ func main() {
 	case "up":
 		if isWGInterfaceExists(interfaceName) {
 			fmt.Printf("Error: interface %s already exists. Please disconnect first.\n", interfaceName)
+			if server, err := loadServerInfo(); err == nil {
+				fmt.Printf("\nCurrently connected to:\n")
+				fmt.Printf("Server name: %s\n", server.Name)
+				fmt.Printf("Country: %s (%s)\n", server.Locations[0].Country.Name, server.Locations[0].Country.Code)
+				fmt.Printf("City: %s\n", server.Locations[0].Country.City.Name)
+				fmt.Printf("Load: %d%%\n", server.Load)
+				fmt.Printf("Status: %s\n", server.Status)
+				fmt.Printf("Hostname: %s\n", server.Hostname)
+			}
 			os.Exit(1)
 		}
 
