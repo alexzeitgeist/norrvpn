@@ -8,7 +8,7 @@ import (
 )
 
 func getCountryList() countries {
-	resp, err := http.Get("https://api.nordvpn.com/v1/countries")
+	resp, err := http.Get("https://api.nordvpn.com/v1/servers/countries")
 	panicer(err)
 	defer resp.Body.Close()
 	data, err := io.ReadAll(resp.Body)
@@ -28,7 +28,9 @@ func getCountryCode(code string) int {
 }
 
 type countries []struct {
-	ID   int    `json:"id"`
-	Code string `json:"code"`
-	Name string `json:"name"`
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Code        string `json:"code"`
+	ServerCount int    `json:"serverCount"`
+	Cities      []City `json:"cities"`
 }

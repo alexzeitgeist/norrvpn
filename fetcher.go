@@ -75,12 +75,13 @@ type Server struct {
 	Technologies []Technologies `json:"technologies,omitempty"`
 }
 type City struct {
-	ID        int     `json:"id,omitempty"`
-	Name      string  `json:"name,omitempty"`
-	Latitude  float64 `json:"latitude,omitempty"`
-	Longitude float64 `json:"longitude,omitempty"`
-	DNSName   string  `json:"dns_name,omitempty"`
-	HubScore  int     `json:"hub_score,omitempty"`
+	ID          int     `json:"id,omitempty"`
+	Name        string  `json:"name,omitempty"`
+	Latitude    float64 `json:"latitude,omitempty"`
+	Longitude   float64 `json:"longitude,omitempty"`
+	DNSName     string  `json:"dns_name,omitempty"`
+	HubScore    int     `json:"hub_score,omitempty"`
+	ServerCount int     `json:"serverCount,omitempty"`
 }
 type Country struct {
 	ID   int    `json:"id,omitempty"`
