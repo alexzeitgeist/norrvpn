@@ -18,6 +18,25 @@ func main() {
 	flag.Parse()
 	function := flag.Arg(0)
 
+	if function == "" {
+		if isWGInterfaceExists(interfaceName) {
+			if server, err := loadServerInfo(); err == nil {
+				fmt.Printf("Currently connected to:\n")
+				fmt.Printf("Server name: %s\n", server.Name)
+				fmt.Printf("Country: %s (%s)\n", server.Locations[0].Country.Name, server.Locations[0].Country.Code)
+				fmt.Printf("City: %s\n", server.Locations[0].Country.City.Name)
+				fmt.Printf("Load: %d%%\n", server.Load)
+				fmt.Printf("Status: %s\n", server.Status)
+				fmt.Printf("Hostname: %s\n", server.Hostname)
+			} else {
+				fmt.Printf("Connected but server details not available\n")
+			}
+		} else {
+			fmt.Printf("Not connected\n")
+		}
+		return
+	}
+
 	switch function {
 	case "up":
 		if isWGInterfaceExists(interfaceName) {
