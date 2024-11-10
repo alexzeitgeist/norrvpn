@@ -36,8 +36,14 @@ func main() {
 		fmt.Printf("Hostname: %s\n", server.Hostname)
 		fmt.Printf("WG public key: %s\n", key)
 		fmt.Printf("WG private key: %s\n", privateKey)
+		saveServerInfo(server)
 		execWGup(interfaceName, privateKey, key, host, defaultNordvpnAddress)
 	case "down":
+		if server, err := loadServerInfo(); err == nil {
+			fmt.Printf("Disconnecting from %s (%s)\n", 
+				server.Locations[0].Country.Name,
+				server.Locations[0].Country.Code)
+		}
 		execWGdown(interfaceName, defaultNordvpnAddress)
 	case "init":
 		token := readSecretInput("Enter TOKEN")
