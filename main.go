@@ -37,6 +37,9 @@ func main() {
 				fmt.Printf("Connected but server details not available\n")
 			}
 		} else {
+			if _, err := os.Stat(serverInfoPath); err == nil {
+				os.Remove(serverInfoPath)
+			}
 			fmt.Printf("Not connected\n")
 		}
 		return
@@ -96,6 +99,7 @@ func main() {
 			fmt.Printf("Error disconnecting: %v\n", err)
 			os.Exit(1)
 		}
+		os.Remove(serverInfoPath)
 	case "init":
 		token := readSecretInput("Enter TOKEN")
 		setToken(token)
