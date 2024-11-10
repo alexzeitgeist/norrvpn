@@ -27,6 +27,19 @@ func getCountryCode(code string) int {
 	return -1
 }
 
+func getCityCode(countryID int, cityName string) int {
+	for _, country := range getCountryList() {
+		if country.ID == countryID {
+			for _, city := range country.Cities {
+				if strings.EqualFold(city.Name, cityName) {
+					return city.ID
+				}
+			}
+		}
+	}
+	return -1
+}
+
 type countries []struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`

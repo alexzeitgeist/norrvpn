@@ -8,11 +8,18 @@ import (
 	"net/http"
 )
 
-func FetchServerData(country int) (string, string, Server) {
-	url := "https://api.nordvpn.com/v1/servers/recommendations?filters[servers_technologies][identifier]=wireguard_udp&limit=1"
-	if country > 0 {
-		url += fmt.Sprintf("&filters[country_id]=%d", country)
+func FetchServerData(countryID int, cityID int) (string, string, Server) {
+	url := "https://api.nordvpn.com/v1/servers/recommendations?filters[servers_technologies][identifier]=wireguard_udp"
+	if countryID > 0 {
+		url += fmt.Sprintf("&filters[country_id]=%d", countryID)
 	}
+
+	if cityID <= 0 {
+		url += "&limit=1"
+	} else {
+		url += "&limit=16384"
+	}
+
 	resp, err := http.Get(url)
 	panicer(err)
 	data, err := io.ReadAll(resp.Body)
@@ -21,10 +28,36 @@ func FetchServerData(country int) (string, string, Server) {
 	err = json.Unmarshal(data, &servers)
 	panicer(err)
 
-	hostname := servers[0].Hostname
+	if len(servers) == 0 {
+		panicer(fmt.Errorf("no servers found for the specified criteria"))
+	}
+
+	var selectedServer Server
+	if cityID > 0 {
+		found := false
+		for _, server := range servers {
+			for _, location := range server.Locations {
+				if location.Country.City.ID == cityID {
+					selectedServer = server
+					found = true
+					break
+				}
+			}
+			if found {
+				break
+			}
+		}
+		if !found {
+			panicer(fmt.Errorf("no servers found in the specified city"))
+		}
+	} else {
+		selectedServer = servers[0]
+	}
+
+	hostname := selectedServer.Hostname
 	var publicKey string
 
-	for _, technology := range servers[0].Technologies {
+	for _, technology := range selectedServer.Technologies {
 		if technology.Identifier != "wireguard_udp" {
 			continue
 		}
@@ -32,7 +65,7 @@ func FetchServerData(country int) (string, string, Server) {
 	}
 	ips, err := net.LookupIP(hostname)
 	panicer(err)
-	return ips[0].String(), publicKey, servers[0]
+	return ips[0].String(), publicKey, selectedServer
 }
 
 func fetchOwnPrivateKey(token string) string {

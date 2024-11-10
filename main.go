@@ -19,7 +19,7 @@ var helpFlag = flag.Bool("help", false, "Show help information")
 const helpText = `Usage: norrvpn [flags] <command> [args]
 
 Commands:
-  up [cc]        Connect to VPN (optionally specify country code)
+  up [cc] [city] Connect to VPN (optionally specify country code and city)
   down           Disconnect from VPN
   export         Export current connection as WireGuard config
   init           Initialize with NordVPN token
@@ -30,18 +30,13 @@ Flags:
   --help         Show this help message
 
 Examples:
-  norrvpn up gb          Connect to server in Great Britain
+  norrvpn up gb london   Connect to server in London, Great Britain
   norrvpn listCountries  Show all available country codes
   norrvpn down           Disconnect current session`
 
 func main() {
-	if os.Geteuid() != 0 {
-		fmt.Println("This program must be run as root (sudo)")
-		os.Exit(1)
-	}
-
 	flag.Parse()
-	
+
 	if *helpFlag {
 		fmt.Println(helpText)
 		os.Exit(0)
@@ -88,10 +83,28 @@ func main() {
 
 		var host, key string
 		var server Server
-		if flag.NArg() == 2 {
-			host, key, server = FetchServerData(getCountryCode(flag.Arg(1)))
-		} else {
-			host, key, server = FetchServerData(-1)
+
+		if flag.NArg() == 1 {
+			host, key, server = FetchServerData(-1, -1)
+		} else if flag.NArg() == 2 {
+			countryID := getCountryCode(flag.Arg(1))
+			if countryID == -1 {
+				fmt.Printf("Error: Invalid country code '%s'\n", flag.Arg(1))
+				os.Exit(1)
+			}
+			host, key, server = FetchServerData(countryID, -1)
+		} else if flag.NArg() == 3 {
+			countryID := getCountryCode(flag.Arg(1))
+			if countryID == -1 {
+				fmt.Printf("Error: Invalid country code '%s'\n", flag.Arg(1))
+				os.Exit(1)
+			}
+			cityID := getCityCode(countryID, flag.Arg(2))
+			if cityID == -1 {
+				fmt.Printf("Error: Invalid city name '%s' for country '%s'\n", flag.Arg(2), flag.Arg(1))
+				os.Exit(1)
+			}
+			host, key, server = FetchServerData(countryID, cityID)
 		}
 		privateKey := fetchOwnPrivateKey(getToken())
 
@@ -112,7 +125,7 @@ func main() {
 		}
 
 		if server, err := loadServerInfo(); err == nil {
-			fmt.Printf("Disconnecting from %s (%s)...\n", 
+			fmt.Printf("Disconnecting from %s (%s)...\n",
 				server.Locations[0].Country.Name,
 				server.Locations[0].Country.Code)
 		}
