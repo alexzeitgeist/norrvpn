@@ -15,6 +15,11 @@ const defaultNordvpnAddress = "10.5.0.2/32"
 const interfaceName = "norrvpn01"
 
 func main() {
+	if os.Geteuid() != 0 {
+		fmt.Println("This program must be run as root (sudo)")
+		os.Exit(1)
+	}
+
 	flag.Parse()
 	function := flag.Arg(0)
 
