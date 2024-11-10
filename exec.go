@@ -51,9 +51,6 @@ func execWGdown(interfaceName, interfaceIP string) error {
 }
 
 func execWGup(interfaceName, privateKey, publicKey, endpointIP, interfaceIP string) error {
-	if isWGInterfaceExists(interfaceName) {
-		return fmt.Errorf("interface %s already exists", interfaceName)
-	}
 	var cmd *exec.Cmd
 	cmd = exec.Command("ip", "link", "show", interfaceName)
 	cmd.Run()

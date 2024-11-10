@@ -20,6 +20,11 @@ func main() {
 
 	switch function {
 	case "up":
+		if isWGInterfaceExists(interfaceName) {
+			fmt.Printf("Error: interface %s already exists. Please disconnect first.\n", interfaceName)
+			os.Exit(1)
+		}
+
 		var host, key string
 		var server Server
 		if flag.NArg() == 2 {
@@ -28,6 +33,7 @@ func main() {
 			host, key, server = FetchServerData(-1)
 		}
 		privateKey := fetchOwnPrivateKey(getToken())
+
 		fmt.Printf("Server name: %s\n", server.Name)
 		fmt.Printf("Country: %s (%s)\n", server.Locations[0].Country.Name, server.Locations[0].Country.Code)
 		fmt.Printf("City: %s\n", server.Locations[0].Country.City.Name)
@@ -36,11 +42,12 @@ func main() {
 		fmt.Printf("Hostname: %s\n", server.Hostname)
 		fmt.Printf("WG public key: %s\n", key)
 		fmt.Printf("WG private key: %s\n", privateKey)
-		saveServerInfo(server)
 		if err := execWGup(interfaceName, privateKey, key, host, defaultNordvpnAddress); err != nil {
 			fmt.Printf("Error connecting: %v\n", err)
 			os.Exit(1)
 		}
+
+		saveServerInfo(server)
 	case "down":
 		if server, err := loadServerInfo(); err == nil {
 			fmt.Printf("Disconnecting from %s (%s)\n", 
