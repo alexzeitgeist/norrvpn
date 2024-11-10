@@ -29,6 +29,7 @@ func main() {
 		fmt.Printf("Country code: %s\n", flag.Arg(1))
 		fmt.Printf("WG public key: %s\n", key)
 		fmt.Printf("WG private key: %s\n", privateKey)
+		fmt.Printf("WG host: %s\n", host)
 		execWGup(interfaceName, privateKey, key, host, defaultNordvpnAddress)
 	case "down":
 		execWGdown(interfaceName, defaultNordvpnAddress)
