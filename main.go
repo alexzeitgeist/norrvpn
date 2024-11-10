@@ -19,7 +19,7 @@ var helpFlag = flag.Bool("help", false, "Show help information")
 const helpText = `Usage: norrvpn [flags] <command> [args]
 
 Commands:
-  up [cc]        Connect to VPN (optionally specify country code)
+  up [cc] [city] Connect to VPN (optionally specify country code and city)
   down           Disconnect from VPN
   export         Export current connection as WireGuard config
   init           Initialize with NordVPN token
@@ -30,7 +30,7 @@ Flags:
   --help         Show this help message
 
 Examples:
-  norrvpn up gb          Connect to server in Great Britain
+  norrvpn up gb london   Connect to server in London, Great Britain
   norrvpn listCountries  Show all available country codes
   norrvpn down           Disconnect current session`
 
@@ -88,10 +88,31 @@ func main() {
 
 		var host, key string
 		var server Server
-		if flag.NArg() == 2 {
-			host, key, server = FetchServerData(getCountryCode(flag.Arg(1)))
-		} else {
-			host, key, server = FetchServerData(-1)
+		
+		if flag.NArg() == 1 {
+			// No country specified, connect to recommended server
+			host, key, server = FetchServerData(-1, -1)
+		} else if flag.NArg() == 2 {
+			// Country code specified
+			countryID := getCountryCode(flag.Arg(1))
+			if countryID == -1 {
+				fmt.Printf("Error: Invalid country code '%s'\n", flag.Arg(1))
+				os.Exit(1)
+			}
+			host, key, server = FetchServerData(countryID, -1)
+		} else if flag.NArg() == 3 {
+			// Country code and city specified
+			countryID := getCountryCode(flag.Arg(1))
+			if countryID == -1 {
+				fmt.Printf("Error: Invalid country code '%s'\n", flag.Arg(1))
+				os.Exit(1)
+			}
+			cityID := getCityID(countryID, flag.Arg(2))
+			if cityID == -1 {
+				fmt.Printf("Error: Invalid city name '%s' for country '%s'\n", flag.Arg(2), flag.Arg(1))
+				os.Exit(1)
+			}
+			host, key, server = FetchServerData(countryID, cityID)
 		}
 		privateKey := fetchOwnPrivateKey(getToken())
 
