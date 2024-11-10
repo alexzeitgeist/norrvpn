@@ -129,9 +129,18 @@ func main() {
 	case "listCountries":
 		table := tablewriter.NewWriter(os.Stdout)
 		for _, country := range getCountryList() {
-			table.Append([]string{country.Name, country.Code})
+			for _, city := range country.Cities {
+				table.Append([]string{
+					country.Name,
+					country.Code,
+					fmt.Sprintf("%d", country.ID),
+					city.Name,
+					fmt.Sprintf("%d", city.ID),
+					fmt.Sprintf("%d", city.ServerCount),
+				})
+			}
 		}
-		headers := []string{"Country", "Code"}
+		headers := []string{"Country", "Code", "Country ID", "City", "City ID", "Servers"}
 		table.SetHeader(headers)
 		table.Render()
 	case "export":
